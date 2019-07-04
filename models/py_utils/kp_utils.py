@@ -74,8 +74,8 @@ def _topk(scores, K=20):
     return topk_scores, topk_inds, topk_clses, topk_ys, topk_xs
 
 def _decode(
-    tl_heat, br_heat, tl_tag, br_tag, tl_regr, br_regr, ct_heat, ct_regr, 
-    K=100, kernel=1, ae_threshold=1, num_dets=1000
+    tl_heat, br_heat, tl_tag, br_tag, tl_regr, br_regr, ct_heat, ct_regr,
+    K=100, kernel=1, ae_threshold=1, num_dets=1000, for_pickle=None
 ):
     batch, cat, height, width = tl_heat.size()
 
@@ -87,6 +87,12 @@ def _decode(
     tl_heat = _nms(tl_heat, kernel=kernel)
     br_heat = _nms(br_heat, kernel=kernel)
     ct_heat = _nms(ct_heat, kernel=kernel)
+
+    # import pickle
+    # pickle.dump(ct_heat[0].unsqueeze(0), open( "save.p", "wb" ) )
+    for_pickle['nms_hm'].append(ct_heat[0])
+    return [],[]
+    # assert 1==2
 
     tl_scores, tl_inds, tl_clses, tl_ys, tl_xs = _topk(tl_heat, K=K)
     br_scores, br_inds, br_clses, br_ys, br_xs = _topk(br_heat, K=K)
@@ -150,10 +156,10 @@ def _decode(
 
     bboxes = bboxes.view(batch, -1, 4)
     bboxes = _gather_feat(bboxes, inds)
-    
+
     #width = (bboxes[:,:,2] - bboxes[:,:,0]).unsqueeze(2)
     #height = (bboxes[:,:,2] - bboxes[:,:,0]).unsqueeze(2)
-    
+
     clses  = tl_clses.contiguous().view(batch, -1, 1)
     clses  = _gather_feat(clses, inds).float()
 
@@ -164,7 +170,7 @@ def _decode(
 
     ct_xs = ct_xs[:,0,:]
     ct_ys = ct_ys[:,0,:]
-    
+
     center = torch.cat([ct_xs.unsqueeze(2), ct_ys.unsqueeze(2), ct_clses.float().unsqueeze(2), ct_scores.unsqueeze(2)], dim=2)
     detections = torch.cat([bboxes, scores, tl_scores, br_scores, clses], dim=2)
     return detections, center
@@ -229,7 +235,7 @@ def _regr_loss(regr, gt_regr, mask):
 
     regr    = regr[mask]
     gt_regr = gt_regr[mask]
-    
+
     regr_loss = nn.functional.smooth_l1_loss(regr, gt_regr, size_average=False)
     regr_loss = regr_loss / (num + 1e-4)
     return regr_loss

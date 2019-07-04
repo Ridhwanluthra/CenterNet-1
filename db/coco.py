@@ -15,7 +15,8 @@ from pycocotools.cocoeval import COCOeval
 class MSCOCO(DETECTION):
     def __init__(self, db_config, split):
         super(MSCOCO, self).__init__(db_config)
-        data_dir   = system_configs.data_dir
+        # data_dir   = system_configs.data_dir
+        data_dir   = "/media/ridhwan/41b91e9e-9e35-4b55-9fd9-5c569c51d214/detection_datasets/"
         result_dir = system_configs.result_dir
         cache_dir  = system_configs.cache_dir
 
@@ -25,7 +26,7 @@ class MSCOCO(DETECTION):
             "minival": "minival2014",
             "testdev": "testdev2017"
         }[self._split]
-        
+
         self._coco_dir = os.path.join(data_dir, "coco")
 
         self._label_dir  = os.path.join(self._coco_dir, "annotations")
@@ -46,13 +47,13 @@ class MSCOCO(DETECTION):
         ], dtype=np.float32)
 
         self._cat_ids = [
-            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 
-            14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 
-            24, 25, 27, 28, 31, 32, 33, 34, 35, 36, 
-            37, 38, 39, 40, 41, 42, 43, 44, 46, 47, 
-            48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 
-            58, 59, 60, 61, 62, 63, 64, 65, 67, 70, 
-            72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 
+            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13,
+            14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
+            24, 25, 27, 28, 31, 32, 33, 34, 35, 36,
+            37, 38, 39, 40, 41, 42, 43, 44, 46, 47,
+            48, 49, 50, 51, 52, 53, 54, 55, 56, 57,
+            58, 59, 60, 61, 62, 63, 64, 65, 67, 70,
+            72, 73, 74, 75, 76, 77, 78, 79, 80, 81,
             82, 84, 85, 86, 87, 88, 89, 90
         ]
         self._classes = {
@@ -66,7 +67,7 @@ class MSCOCO(DETECTION):
         self._load_data()
         self._db_inds = np.arange(len(self._image_ids))
 
-        self._load_coco_data() 
+        self._load_coco_data()
 
     def _load_data(self):
         print("loading from cache file: {}".format(self._cache_file))
@@ -105,7 +106,7 @@ class MSCOCO(DETECTION):
         coco_image_ids = self._coco.getImgIds()
 
         self._image_ids = [
-            self._coco.loadImgs(img_id)[0]["file_name"] 
+            self._coco.loadImgs(img_id)[0]["file_name"]
             for img_id in coco_image_ids
         ]
         self._detections = {}

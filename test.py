@@ -36,7 +36,7 @@ def make_dirs(directories):
         if not os.path.exists(directory):
             os.makedirs(directory)
 
-def test(db, split, testiter, debug=False, suffix=None): 
+def test(db, split, testiter, debug=False, suffix=None):
     result_dir = system_configs.result_dir
     result_dir = os.path.join(result_dir, str(testiter), split)
 
@@ -71,7 +71,7 @@ if __name__ == "__main__":
 
     with open(cfg_file, "r") as f:
         configs = json.load(f)
-            
+
     configs["system"]["snapshot_name"] = args.cfg_file
     system_configs.update_config(configs["system"])
 

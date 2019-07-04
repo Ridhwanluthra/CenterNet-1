@@ -59,7 +59,7 @@ class NetworkFactory(object):
         elif system_configs.opt_algo == "sgd":
             self.optimizer = torch.optim.SGD(
                 filter(lambda p: p.requires_grad, self.model.parameters()),
-                lr=system_configs.learning_rate, 
+                lr=system_configs.learning_rate,
                 momentum=0.9, weight_decay=0.0001
             )
         else:
@@ -136,4 +136,4 @@ class NetworkFactory(object):
         print("saving model to {}".format(cache_file))
         with open(cache_file, "wb") as f:
             params = self.model.state_dict()
-            torch.save(params, f) 
+            torch.save(params, f)

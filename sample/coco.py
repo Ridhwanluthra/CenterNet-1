@@ -28,7 +28,7 @@ def _resize_image(image, detections, size):
     new_height, new_width = size
 
     image = cv2.resize(image, (new_width, new_height))
-    
+
     height_ratio = new_height / height
     width_ratio  = new_width  / width
     detections[:, 0:4:2] *= width_ratio
@@ -189,6 +189,7 @@ def kp_detection(db, k_ind, data_aug, debug):
     br_tags     = torch.from_numpy(br_tags)
     ct_tags     = torch.from_numpy(ct_tags)
     tag_masks   = torch.from_numpy(tag_masks)
+    print("I AM REACHING HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
     return {
         "xs": [images, tl_tags, br_tags, ct_tags],

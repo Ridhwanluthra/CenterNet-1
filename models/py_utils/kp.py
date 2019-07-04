@@ -33,17 +33,17 @@ class kp_module(nn.Module):
         next_dim = dims[1]
 
         self.up1  = make_up_layer(
-            3, curr_dim, curr_dim, curr_mod, 
+            3, curr_dim, curr_dim, curr_mod,
             layer=layer, **kwargs
-        )  
+        )
         self.max1 = make_pool_layer(curr_dim)
         self.low1 = make_hg_layer(
             3, curr_dim, next_dim, curr_mod,
             layer=layer, **kwargs
         )
         self.low2 = kp_module(
-            n - 1, dims[1:], modules[1:], layer=layer, 
-            make_up_layer=make_up_layer, 
+            n - 1, dims[1:], modules[1:], layer=layer,
+            make_up_layer=make_up_layer,
             make_low_layer=make_low_layer,
             make_hg_layer=make_hg_layer,
             make_hg_layer_revr=make_hg_layer_revr,
@@ -75,14 +75,14 @@ class kp_module(nn.Module):
 
 class kp(nn.Module):
     def __init__(
-        self, db, n, nstack, dims, modules, out_dim, pre=None, cnv_dim=256, 
+        self, db, n, nstack, dims, modules, out_dim, pre=None, cnv_dim=256,
         make_tl_layer=make_tl_layer, make_br_layer=make_br_layer, make_ct_layer=make_ct_layer,
         make_cnv_layer=make_cnv_layer, make_heat_layer=make_kp_layer,
         make_tag_layer=make_kp_layer, make_regr_layer=make_kp_layer,
-        make_up_layer=make_layer, make_low_layer=make_layer, 
+        make_up_layer=make_layer, make_low_layer=make_layer,
         make_hg_layer=make_layer, make_hg_layer_revr=make_layer_revr,
         make_pool_layer=make_pool_layer, make_unpool_layer=make_unpool_layer,
-        make_merge_layer=make_merge_layer, make_inter_layer=make_inter_layer, 
+        make_merge_layer=make_merge_layer, make_inter_layer=make_inter_layer,
         kp_layer=residual
     ):
         super(kp, self).__init__()
@@ -195,8 +195,8 @@ class kp(nn.Module):
 
         layers = zip(
             self.kps,      self.cnvs,
-            self.tl_cnvs,  self.br_cnvs, 
-            self.ct_cnvs,  self.tl_heats, 
+            self.tl_cnvs,  self.br_cnvs,
+            self.ct_cnvs,  self.tl_heats,
             self.br_heats, self.ct_heats,
             self.tl_tags,  self.br_tags,
             self.tl_regrs, self.br_regrs,
@@ -239,6 +239,10 @@ class kp(nn.Module):
 
     def _test(self, *xs, **kwargs):
         image = xs[0]
+        for_pickle = kwargs['for_pickle']
+        # import pickle
+        for_pickle['img'].append(image[0])
+        # pickle.dump(image[0].unsqueeze(0), open( "image.p", "wb" ))
 
         inter = self.pre(image)
 
@@ -271,6 +275,11 @@ class kp(nn.Module):
                 ct_cnv = ct_cnv_(cnv)
 
                 tl_heat, br_heat, ct_heat = tl_heat_(tl_cnv), br_heat_(br_cnv), ct_heat_(ct_cnv)
+                for_pickle['hm'].append(ct_heat[0])
+                # pickle.dump(ct_heat[0].unsqueeze(0), open( "save.p", "wb" ) )
+                # print("I belive this is my heat", type(ct_heat), ct_heat.shape)
+                # print("I belive this is my heat", type(tl_heat), tl_heat.shape)
+                # print("I belive this is my heat", type(br_heat), br_heat.shape)
                 tl_tag, br_tag        = tl_tag_(tl_cnv),  br_tag_(br_cnv)
                 tl_regr, br_regr, ct_regr = tl_regr_(tl_cnv), br_regr_(br_cnv), ct_regr_(ct_cnv)
 
@@ -281,7 +290,7 @@ class kp(nn.Module):
                 inter = self.inters_[ind](inter) + self.cnvs_[ind](cnv)
                 inter = self.relu(inter)
                 inter = self.inters[ind](inter)
-                
+
         return self._decode(*outs[-8:], **kwargs)
 
     def forward(self, *xs, **kwargs):
@@ -319,7 +328,7 @@ class AELoss(nn.Module):
         gt_tl_regr = targets[4]
         gt_br_regr = targets[5]
         gt_ct_regr = targets[6]
-        
+
         # focal loss
         focal_loss = 0
 
