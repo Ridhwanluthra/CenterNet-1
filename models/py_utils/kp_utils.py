@@ -90,6 +90,8 @@ def _decode(
 
     # import pickle
     # pickle.dump(ct_heat[0].unsqueeze(0), open( "save.p", "wb" ) )
+    # for_pickle['nms_hm'].append(ct_heat[0].detach().cpu().numpy().squeeze())
+    # for_pickle['nms_hm'].append(ct_heat[0].detach().cpu())
     for_pickle['nms_hm'].append(ct_heat[0])
     return [],[]
     # assert 1==2

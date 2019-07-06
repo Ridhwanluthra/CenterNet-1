@@ -241,7 +241,7 @@ class kp(nn.Module):
         image = xs[0]
         for_pickle = kwargs['for_pickle']
         # import pickle
-        for_pickle['img'].append(image[0])
+        # for_pickle['img'].append(image[0])
         # pickle.dump(image[0].unsqueeze(0), open( "image.p", "wb" ))
 
         inter = self.pre(image)
@@ -275,6 +275,8 @@ class kp(nn.Module):
                 ct_cnv = ct_cnv_(cnv)
 
                 tl_heat, br_heat, ct_heat = tl_heat_(tl_cnv), br_heat_(br_cnv), ct_heat_(ct_cnv)
+                # for_pickle['hm'].append(ct_heat[0].detach().cpu().numpy().squeeze())
+                # for_pickle['hm'].append(ct_heat[0].detach().cpu())
                 for_pickle['hm'].append(ct_heat[0])
                 # pickle.dump(ct_heat[0].unsqueeze(0), open( "save.p", "wb" ) )
                 # print("I belive this is my heat", type(ct_heat), ct_heat.shape)

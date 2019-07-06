@@ -90,8 +90,23 @@ def kp_detection(db, nnet, result_dir, debug=False, decode_func=kp_decode):
     print(db_inds.shape)
     # for ind in tqdm(range(0, num_images), ncols=80, desc="locating kps"):
     for_pickle = {'img': [], 'hm': [], 'nms_hm': []}
+    storage_root = '/media/ridhwan/41b91e9e-9e35-4b55-9fd9-5c569c51d214/detection_datasets/hm/'
     import pickle
+    from glob import glob
+
+    # check how many already stored
+    hm_files = glob('{}*.p'.format(storage_root))
+    if hm_files:
+        for i, each in enumerate(hm_files):
+            hm_files[i] = int(each.split('/')[-1].split('_')[-1][:-2])
+        hm_files = max(hm_files)
+    else:
+        hm_files = -1
+
     for db_ind in tqdm(db_inds, ncols=80, desc="locating kps"):
+        # skip the iterations for which hm is already stored
+        if db_ind <= hm_files:
+            continue
         # db_ind = db_inds[ind]
         # print('\n', scales)
 
@@ -158,10 +173,12 @@ def kp_detection(db, nnet, result_dir, debug=False, decode_func=kp_decode):
             # print(images.shape)
             images = torch.from_numpy(images)
             dets, center = decode_func(nnet, images, K, ae_threshold=ae_threshold, kernel=nms_kernel, for_pickle=for_pickle)
-            if (db_ind+1)%100 == 0:
-                print('\nstoring pickle')
+            if (db_ind+1)%5 == 0:
+                print('\nstoring pickle', db_ind)
                 print(len(for_pickle['img']), len(for_pickle['hm']), len(for_pickle['nms_hm']))
-                pickle.dump(for_pickle, open( "cornercenternet_hm.p", "wb" ) )
+                # pickle.dump(for_pickle, open( "cornercenternet_hm.p", "wb" ) )
+                pickle.dump(for_pickle, open("{0}cornercenternethm_{1}.p".format(storage_root, db_ind), "wb" ) )
+                for_pickle = {'img': [], 'hm': [], 'nms_hm': []}
             break
             dets   = dets.reshape(2, -1, 8)
             center = center.reshape(2, -1, 4)
@@ -314,7 +331,7 @@ def kp_detection(db, nnet, result_dir, debug=False, decode_func=kp_decode):
                 keep_inds = (top_bboxes[image_id][j][:, -1] >= thresh)
                 top_bboxes[image_id][j] = top_bboxes[image_id][j][keep_inds]
 
-        if True:
+        if False:
             image_file = db.image_file(db_ind)
             image      = cv2.imread(image_file)
             im         = image[:, :, (2, 1, 0)]
