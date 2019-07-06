@@ -91,6 +91,7 @@ def kp_detection(db, nnet, result_dir, debug=False, decode_func=kp_decode):
     # for ind in tqdm(range(0, num_images), ncols=80, desc="locating kps"):
     for_pickle = {'img': [], 'hm': [], 'nms_hm': []}
     storage_root = '/media/ridhwan/41b91e9e-9e35-4b55-9fd9-5c569c51d214/detection_datasets/hm/'
+    # storage_root = '/home/ridhwan/storage/ridhwan/hm/'
     import pickle
     from glob import glob
 
