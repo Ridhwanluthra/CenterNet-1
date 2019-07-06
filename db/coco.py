@@ -16,7 +16,7 @@ class MSCOCO(DETECTION):
     def __init__(self, db_config, split):
         super(MSCOCO, self).__init__(db_config)
         # data_dir   = system_configs.data_dir
-        data_dir   = "/media/ridhwan/41b91e9e-9e35-4b55-9fd9-5c569c51d214/detection_datasets/"
+        data_dir   = "/home/ridhwan/detection_datasets/"
         result_dir = system_configs.result_dir
         cache_dir  = system_configs.cache_dir
 
