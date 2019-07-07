@@ -50,12 +50,12 @@ def save_image(data, fn):
     plt.savefig(fn, dpi = height)
     plt.close()
 
-def kp_decode(nnet, images, K, ae_threshold=0.5, kernel=3, for_pickle=None):
+def kp_decode(nnet, images, K, ae_threshold=0.5, kernel=3, db_ind=None):
     # nnet.test([images], ae_threshold=ae_threshold, K=K, kernel=kernel)
-    detections, center = nnet.test([images], ae_threshold=ae_threshold, K=K, kernel=kernel, for_pickle=for_pickle, )
+    detections, center = nnet.test([images], ae_threshold=ae_threshold, K=K, kernel=kernel, db_ind=db_ind, )
     # return
-    # detections = detections.data.cpu().numpy()
-    # center = center.data.cpu().numpy()
+    detections = detections.data.cpu().numpy()
+    center = center.data.cpu().numpy()
     return detections, center
 
 def kp_detection(db, nnet, result_dir, debug=False, decode_func=kp_decode):
@@ -86,28 +86,11 @@ def kp_detection(db, nnet, result_dir, debug=False, decode_func=kp_decode):
     }[db.configs["nms_algorithm"]]
 
     top_bboxes = {}
-    print('number of images- ', num_images)
-    print(db_inds.shape)
-    # for ind in tqdm(range(0, num_images), ncols=80, desc="locating kps"):
-    for_pickle = {'img': [], 'hm': [], 'nms_hm': []}
-    storage_root = '/media/ridhwan/41b91e9e-9e35-4b55-9fd9-5c569c51d214/detection_datasets/hm/'
-    # storage_root = '/home/ridhwan/storage/ridhwan/hm/'
-    import pickle
-    from glob import glob
 
-    # check how many already stored
-    hm_files = glob('{}*.p'.format(storage_root))
-    if hm_files:
-        for i, each in enumerate(hm_files):
-            hm_files[i] = int(each.split('/')[-1].split('_')[-1][:-2])
-        hm_files = max(hm_files)
-    else:
-        hm_files = -1
+    # for ind in tqdm(range(0, num_images), ncols=80, desc="locating kps"):
 
     for db_ind in tqdm(db_inds, ncols=80, desc="locating kps"):
         # skip the iterations for which hm is already stored
-        if db_ind <= hm_files:
-            continue
         # db_ind = db_inds[ind]
         # print('\n', scales)
 
@@ -173,18 +156,14 @@ def kp_detection(db, nnet, result_dir, debug=False, decode_func=kp_decode):
             # images = np.concatenate((images, images[:, :, :, ::-1]), axis=0)
             # print(images.shape)
             images = torch.from_numpy(images)
-            dets, center = decode_func(nnet, images, K, ae_threshold=ae_threshold, kernel=nms_kernel, for_pickle=for_pickle)
-            if (db_ind+1)%5 == 0:
-                print('\nstoring pickle', db_ind)
-                print(len(for_pickle['img']), len(for_pickle['hm']), len(for_pickle['nms_hm']))
-                # pickle.dump(for_pickle, open( "cornercenternet_hm.p", "wb" ) )
-                pickle.dump(for_pickle, open("{0}cornercenternethm_{1}.p".format(storage_root, db_ind), "wb" ) )
-                for_pickle = {'img': [], 'hm': [], 'nms_hm': []}
-            break
-            dets   = dets.reshape(2, -1, 8)
-            center = center.reshape(2, -1, 4)
-            dets[1, :, [0, 2]] = out_width - dets[1, :, [2, 0]]
-            center[1, :, [0]] = out_width - center[1, :, [0]]
+            dets, center = decode_func(nnet, images, K, ae_threshold=ae_threshold, kernel=nms_kernel, db_ind=db_ind)
+
+            # dets   = dets.reshape(2, -1, 8)
+            # center = center.reshape(2, -1, 4)
+            # dets   = dets.reshape(1, -1, 8)
+            # center   = center.reshape(1, -1, 4)
+            # dets[1, :, [0, 2]] = out_width - dets[1, :, [2, 0]]
+            # center[1, :, [0]] = out_width - center[1, :, [0]]
             dets   = dets.reshape(1, -1, 8)
             center   = center.reshape(1, -1, 4)
 
@@ -202,8 +181,6 @@ def kp_detection(db, nnet, result_dir, debug=False, decode_func=kp_decode):
             if scale == 1:
               center_points.append(center)
             detections.append(dets)
-
-        continue
 
         detections = np.concatenate(detections, axis=1)
         center_points = np.concatenate(center_points, axis=1)
@@ -364,7 +341,6 @@ def kp_detection(db, nnet, result_dir, debug=False, decode_func=kp_decode):
             plt.close()
             # cv2.imwrite(debug_file, image, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
 
-    return 0
     result_json = os.path.join(result_dir, "results.json")
     detections  = db.convert_to_coco(top_bboxes)
     with open(result_json, "w") as f:

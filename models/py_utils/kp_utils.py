@@ -75,7 +75,7 @@ def _topk(scores, K=20):
 
 def _decode(
     tl_heat, br_heat, tl_tag, br_tag, tl_regr, br_regr, ct_heat, ct_regr,
-    K=100, kernel=1, ae_threshold=1, num_dets=1000, for_pickle=None
+    K=100, kernel=1, ae_threshold=1, num_dets=1000, db_ind=None
 ):
     batch, cat, height, width = tl_heat.size()
 
@@ -87,14 +87,6 @@ def _decode(
     tl_heat = _nms(tl_heat, kernel=kernel)
     br_heat = _nms(br_heat, kernel=kernel)
     ct_heat = _nms(ct_heat, kernel=kernel)
-
-    # import pickle
-    # pickle.dump(ct_heat[0].unsqueeze(0), open( "save.p", "wb" ) )
-    # for_pickle['nms_hm'].append(ct_heat[0].detach().cpu().numpy().squeeze())
-    # for_pickle['nms_hm'].append(ct_heat[0].detach().cpu())
-    for_pickle['nms_hm'].append(ct_heat[0])
-    return [],[]
-    # assert 1==2
 
     tl_scores, tl_inds, tl_clses, tl_ys, tl_xs = _topk(tl_heat, K=K)
     br_scores, br_inds, br_clses, br_ys, br_xs = _topk(br_heat, K=K)

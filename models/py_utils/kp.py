@@ -1,5 +1,6 @@
 import pdb
 import torch
+import pickle
 
 import numpy as np
 import torch.nn as nn
@@ -239,9 +240,9 @@ class kp(nn.Module):
 
     def _test(self, *xs, **kwargs):
         image = xs[0]
-        for_pickle = kwargs['for_pickle']
+        db_ind = kwargs['db_ind']
         # import pickle
-        # for_pickle['img'].append(image[0])
+        # db_ind['img'].append(image[0])
         # pickle.dump(image[0].unsqueeze(0), open( "image.p", "wb" ))
 
         inter = self.pre(image)
@@ -275,10 +276,14 @@ class kp(nn.Module):
                 ct_cnv = ct_cnv_(cnv)
 
                 tl_heat, br_heat, ct_heat = tl_heat_(tl_cnv), br_heat_(br_cnv), ct_heat_(ct_cnv)
-                # for_pickle['hm'].append(ct_heat[0].detach().cpu().numpy().squeeze())
-                # for_pickle['hm'].append(ct_heat[0].detach().cpu())
-                for_pickle['hm'].append(ct_heat[0])
-                # pickle.dump(ct_heat[0].unsqueeze(0), open( "save.p", "wb" ) )
+
+                storage_root = '/media/ridhwan/41b91e9e-9e35-4b55-9fd9-5c569c51d214/detection_datasets/hm_center/'
+                # storage_root = '/home/ridhwan/storage/ridhwan/hm_center/'
+                store_distance = 5
+                pickle_id = ((store_distance - 1) - (db_ind%store_distance)) + db_ind
+                center_file = pickle.load(open( "{0}centernethm_{1}.p".format(storage_root, pickle_id), "rb" ) )
+                ct_heat = center_file['hm'][db_ind % store_distance]
+
                 # print("I belive this is my heat", type(ct_heat), ct_heat.shape)
                 # print("I belive this is my heat", type(tl_heat), tl_heat.shape)
                 # print("I belive this is my heat", type(br_heat), br_heat.shape)
